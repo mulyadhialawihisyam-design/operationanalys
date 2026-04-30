@@ -150,7 +150,6 @@
     </div>
   </footer>
 
-  <!-- MODAL DETAIL -->
   <div id="modal" class="fixed inset-0 modal-bg z-50 hidden flex items-center justify-center p-4">
     <div class="glass w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl">
       <div class="p-6 border-b border-white/5 flex justify-between items-start">
@@ -166,7 +165,8 @@
         <div id="strategyText" class="text-[10px] font-bold text-blue-200 uppercase tracking-tight leading-relaxed"></div>
       </div>
 
-      <div id="mBody" class="p-6 max-h-[50vh] overflow-y-auto space-y-3"></div>
+      <div id="mBody" class="p-6 max-h-[50vh] overflow-y-auto space-y-3">
+        </div>
       
       <div class="p-4 bg-black/40 text-center">
         <button onclick="tutupModal()" class="w-full py-3 bg-white text-black font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-200 transition">Tutup Detail</button>
@@ -174,7 +174,6 @@
     </div>
   </div>
 
-  <!-- MODAL FORMULA -->
   <div id="formulaModal" class="fixed inset-0 modal-bg z-[60] hidden flex items-center justify-center p-4 text-center">
     <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 border border-white/10 shadow-2xl">
       <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6 no-italic">Formula Dasar :</div>
@@ -185,7 +184,6 @@
     </div>
   </div>
 
-  <!-- MODAL REPORT -->
   <div id="reportModal" class="fixed inset-0 modal-bg z-50 hidden flex items-center justify-center p-4">
     <div class="glass w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
       <div class="p-6 border-b border-white/5 flex justify-between items-center">
@@ -223,8 +221,8 @@
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GAS ANDA DI SINI
-    const API_URL = "https://script.google.com/macros/s/AKfycbzjZk_1bGrE5s41LxQuEwpfOXQ4fghyBqMMk6PvG8zKYZE1Tcowr9Yc-jO_CWxiUg59uQ/exec";
+    // GANTI DENGAN URL WEB APP DEPLOYMENT ANDA
+    const WEB_APP_URL = "YOUR_WEB_APP_URL_HERE";
 
     let dataMaster = [];
     let currentFilteredData = [];
@@ -247,15 +245,14 @@
       `;
 
       try {
-        const response = await fetch(`${API_URL}?action=getDashboardData&tgl=${tgl}`);
-        const res = await response.json();
-        
-        dataMaster = res;
+        const response = await fetch(`${WEB_APP_URL}?action=getDashboardData&tgl=${tgl}`);
+        const data = await response.json();
+        dataMaster = data;
         document.getElementById('btnReport').classList.remove('hidden');
         filterTampilan();
-      } catch (err) {
-        console.error(err);
-        alert("Gagal memuat data dari API!");
+      } catch (error) {
+        alert("Gagal memuat data. Pastikan URL Web App benar dan CORS aktif.");
+        console.error(error);
       }
     }
 
@@ -368,7 +365,7 @@
       btn.classList.add('opacity-50');
 
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(WEB_APP_URL, {
           method: 'POST',
           body: JSON.stringify({
             action: 'saveReportToSheet',
@@ -378,8 +375,8 @@
         });
         const res = await response.json();
         alert(res.message);
-      } catch (err) {
-        alert("Gagal mengirim data ke Sheet!");
+      } catch (error) {
+        alert("Gagal mengirim data.");
       } finally {
         btn.innerText = "Send to Sheet Report";
         btn.disabled = false;
