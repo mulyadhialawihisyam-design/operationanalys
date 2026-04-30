@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Core | MULY@.ID</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #05070a; color: white; margin: 0; }
+    .cyber-card { background: rgba(11, 14, 20, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+    .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
+    .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
+    @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #05070a; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-900/40">M</div>
+        <h1 class="text-xl md:text-2xl font-extrabold tracking-tighter uppercase italic">Operational <span class="text-blue-500 underline decoration-blue-500/30">Analytics</span></h1>
+      </div>
+      <p class="text-[10px] text-gray-500 font-bold tracking-[0.3em] uppercase">Core Engine v2.0 • Muly@.ID</p>
+    </div>
+    
+    <div class="flex gap-2">
+        <button onclick="fetchData()" id="btn-sync" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-[10px] tracking-widest transition-all flex items-center gap-2">
+          <span id="sync-text">RUN SYNC DATA</span>
+          <div id="btn-loader" class="hidden w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+        </button>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center">
+    <div class="loader w-12 h-12 border-4 border-white/10 rounded-full mb-4"></div>
+    <p class="text-[10px] font-black tracking-[0.5em] text-blue-500 animate-pulse">MEMPROSES DATABASE & AUDIT LOGIKA...</p>
+  </div>
+
+  <!-- STATS OVERVIEW -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="stats-container">
+    <!-- Stats will be injected here -->
+  </div>
+
+  <!-- TABLE CONTAINER -->
+  <div class="cyber-card rounded-2xl overflow-hidden shadow-2xl border border-white/5">
+    <div class="p-6 border-b border-white/5 flex justify-between items-center">
+      <h2 class="text-xs font-black tracking-widest text-gray-400 uppercase">Performance Distribution Report</h2>
+      <div id="data-range-label" class="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full">LIVE DATA</div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="text-[10px] font-black uppercase tracking-widest text-gray-500 bg-white/5">
+            <th class="p-4 border-b border-white/5">Tanggal / Hari</th>
+            <th class="p-4 border-b border-white/5 text-blue-400">Team Leader</th>
+            <th class="p-4 border-b border-white/5">Shift</th>
+            <th class="p-4 border-b border-white/5 text-center bg-yellow-500/5">MP Plan</th>
+            <th class="p-4 border-b border-white/5 text-center bg-green-500/5">MP Act</th>
+            <th class="p-4 border-b border-white/5 text-right">Target Act</th>
+            <th class="p-4 border-b border-white/5 text-right text-blue-400">Total Ach</th>
+            <th class="p-4 border-b border-white/5 text-center">Achievement</th>
+          </tr>
+        </thead>
+        <tbody id="table-body" class="text-[11px] font-bold">
+          <!-- Data will be injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // URL API GAS ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjZk_1bGrE5s41LxQuEwpfOXQ4fghyBqMMk6PvG8zKYZE1Tcowr9Yc-jO_CWxiUg59uQ/exec?action=getData";
+    async function fetchData() {
+      const btn = document.getElementById('btn-sync');
+      const loader = document.getElementById('btn-loader');
+      const overlay = document.getElementById('loading-overlay');
+      
+      btn.disabled = true;
+      loader.classList.remove('hidden');
+      overlay.classList.remove('hidden');
+
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        if (data.error) {
+          alert("Error: " + data.error);
+        } else {
+          renderDashboard(data);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Gagal mengambil data dari API.");
+      } finally {
+        btn.disabled = false;
+        loader.classList.add('hidden');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function renderDashboard(data) {
+      const tableBody = document.getElementById('table-body');
+      tableBody.innerHTML = '';
+
+      let totalGlobalAch = 0;
+      let totalGlobalTarget = 0;
+
+      data.forEach(row => {
+        totalGlobalAch += row.totalAch;
+        totalGlobalTarget += row.targetAct;
+
+        const achPerc = parseFloat(row.percAct);
+        const colorClass = achPerc >= 90 ? 'text-green-400' : (achPerc >= 80 ? 'text-yellow-400' : 'text-red-400');
+        const bgClass = achPerc >= 90 ? 'bg-green-500/10' : (achPerc >= 80 ? 'bg-yellow-500/10' : 'bg-red-500/10');
+
+        tableBody.innerHTML += `
+          <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
+            <td class="p-4">
+              <div class="text-white">${row.tanggal}</div>
+              <div class="text-[9px] text-gray-500 italic">${row.hari}</div>
+            </td>
+            <td class="p-4 text-blue-400 font-extrabold uppercase tracking-tighter">${row.tl}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded bg-slate-800 text-gray-400 text-[9px] uppercase font-black">${row.shift}</span>
+            </td>
+            <td class="p-4 text-center bg-yellow-500/5">
+              <span class="text-yellow-500">${row.planSenior + row.planProb}</span>
+              <div class="text-[8px] text-gray-600">S:${row.planSenior}|P:${row.planProb}</div>
+            </td>
+            <td class="p-4 text-center bg-green-500/5">
+              <span class="text-green-500">${row.actSenior + row.actProb}</span>
+              <div class="text-[8px] text-gray-600">S:${row.actSenior}|P:${row.actProb}</div>
+            </td>
+            <td class="p-4 text-right font-mono text-gray-400">${row.targetAct.toLocaleString()}</td>
+            <td class="p-4 text-right font-mono text-blue-400">${row.totalAch.toLocaleString()}</td>
+            <td class="p-4 text-center">
+              <div class="${bgClass} ${colorClass} py-2 rounded-lg text-[13px] font-black border border-white/5">
+                ${row.percAct}%
+              </div>
+              <div class="text-[8px] mt-1 tracking-widest font-bold">${row.ketAct}</div>
+            </td>
+          </tr>
+        `;
+      });
+
+      updateStats(data, totalGlobalAch, totalGlobalTarget);
+    }
+
+    function updateStats(data, totalAch, totalTarget) {
+      const container = document.getElementById('stats-container');
+      const avgAch = totalTarget > 0 ? ((totalAch / totalTarget) * 100).toFixed(1) : 0;
+      
+      const stats = [
+        { label: 'Total Achievement', val: totalAch.toLocaleString(), color: 'text-blue-500' },
+        { label: 'Total Target Act', val: totalTarget.toLocaleString(), color: 'text-gray-400' },
+        { label: 'Avg Achievement', val: avgAch + '%', color: avgAch >= 90 ? 'text-green-400' : 'text-red-400' },
+        { label: 'Total Days', val: [...new Set(data.map(d => d.tanggal))].length, color: 'text-yellow-500' }
+      ];
+
+      container.innerHTML = stats.map(s => `
+        <div class="cyber-card p-6 rounded-2xl glow-blue">
+          <p class="text-[8px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">${s.label}</p>
+          <p class="text-xl md:text-2xl font-black italic ${s.color} tracking-tighter">${s.val}</p>
+        </div>
+      `).join('');
+    }
+
+    // Auto-fetch saat halaman dimuat
+    window.onload = fetchData;
+  </script>
+</body>
+</html>
