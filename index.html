@@ -1,215 +1,453 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analytics Core | MULY@.ID</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #05070a; color: white; margin: 0; }
-    .cyber-card { background: rgba(11, 14, 20, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
-    .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
-    .glow-border-blue { border: 1px solid rgba(59, 130, 246, 0.5); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-    .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
-    @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .modal-active { display: flex !important; }
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background-color: #0b0e14; 
+      color: #ffffff; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+    }
+    
+    .glass { 
+      background: rgba(23, 27, 34, 0.8); 
+      border: 1px solid rgba(255,255,255,0.05); 
+      backdrop-filter: blur(12px); 
+      transition: all 0.3s ease;
+    }
+
+    .glass:hover {
+      background: rgba(31, 41, 55, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .border-glow-green {
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    }
+
+    .modal-bg { 
+      background: rgba(0,0,0,0.9); 
+    }
+
+    ::-webkit-scrollbar { 
+      width: 6px; 
+    }
+
+    ::-webkit-scrollbar-thumb { 
+      background: #3b82f6; 
+      border-radius: 10px; 
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .animate-flicker {
+      animation: flicker 2s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .no-italic {
+      font-style: normal !important;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .report-table th {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+    }
+    .report-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
   </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 no-italic">
 
-  <!-- HEADER -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-    <div>
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-900/40">M</div>
-        <h1 class="text-xl md:text-2xl font-extrabold tracking-tighter uppercase italic text-blue-500">Analytics <span class="text-white underline decoration-blue-500/30 text-white">Dashboard</span></h1>
-      </div>
-      <p class="text-[10px] text-gray-500 font-bold tracking-[0.3em] uppercase">Core Engine v2.0 • Muly@.ID</p>
-    </div>
-    
-    <div class="flex gap-2">
-        <button onclick="fetchData()" id="btn-sync" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-[10px] tracking-widest transition-all flex items-center gap-2">
-          <span>RUN SYNC DATABASE</span>
-          <div id="btn-loader" class="hidden w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+  <div class="max-w-6xl mx-auto flex-grow w-full">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <h1 class="text-2xl font-extrabold tracking-tighter no-italic uppercase">
+        OPERATIONAL <span class="text-blue-500">PERFORMANCE</span>
+      </h1>
+      <div class="flex gap-2 w-full md:w-auto">
+        <input type="date" id="tglInput" class="flex-grow md:flex-grow-0 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 text-white">
+        <button onclick="muatData()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-xl font-bold text-sm transition shadow-lg shadow-blue-900/20 uppercase tracking-tight">
+          Load Data
         </button>
+        <button id="btnReport" onclick="bukaModalLaporan()" class="hidden bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-2 rounded-xl font-bold text-sm transition uppercase tracking-tight flex items-center gap-2">
+          <span>📊</span> Report
+        </button>
+      </div>
+    </div>
+
+    <div id="summaryRow" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 text-center">
+      <div class="glass p-5 rounded-2xl border-l-4 border-blue-600">
+        <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Senior Operator</div>
+        <div id="countSenior" class="text-xl md:text-2xl font-extrabold">0 <span class="text-xs text-gray-600">/ 0 Poin</span></div>
+      </div>
+      <div class="glass p-5 rounded-2xl border-l-4 border-amber-500">
+        <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Probation / Bantuan</div>
+        <div id="countProb" class="text-xl md:text-2xl font-extrabold">0 <span class="text-xs text-gray-600">/ 0 Poin</span></div>
+      </div>
+      <div class="glass p-5 rounded-2xl border-l-4 border-white/20">
+        <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Kapasitas Bobot</div>
+        <div id="totalCapacity" class="text-xl md:text-2xl font-extrabold">0</div>
+      </div>
+      <div class="glass p-5 rounded-2xl border-l-4 border-green-500 bg-green-500/5">
+        <div class="text-green-500 text-[10px] font-bold uppercase tracking-widest mb-1">Total Pencapaian</div>
+        <div id="totalAchievement" class="text-xl md:text-2xl font-extrabold">0</div>
+      </div>
+      <div class="glass p-5 rounded-2xl border-l-4 border-blue-400 bg-blue-400/5">
+        <div class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-1">Efisiensi Global</div>
+        <div id="globalEfficiency" class="text-xl md:text-2xl font-extrabold">0%</div>
+      </div>
+    </div>
+
+    <textarea id="multiSearch" oninput="filterTampilan()" placeholder="Paste multiple usernames or names here..." class="w-full bg-gray-900 border border-gray-800 rounded-2xl p-4 text-sm mb-6 h-16 focus:outline-none focus:border-blue-600 transition resize-none no-italic"></textarea>
+
+    <div id="listContainer" class="space-y-3">
+      <div class="text-center py-20 text-gray-600 font-bold no-italic uppercase tracking-widest opacity-50">
+        Pilih tanggal untuk memuat data.
+      </div>
     </div>
   </div>
 
-  <!-- SUMMARY CARDS (Keberhasilan) -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="stats-container">
-    <!-- Diisi otomatis oleh JavaScript -->
-  </div>
-
-  <!-- MAIN TABLE CONTAINER -->
-  <div class="cyber-card rounded-2xl overflow-hidden shadow-2xl border border-white/5">
-    <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-      <h2 class="text-xs font-black tracking-widest text-gray-400 uppercase">Production Distribution & Performance Audit</h2>
-      <div class="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">LIVE DATA FEED</div>
-    </div>
-    
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="text-[9px] font-black uppercase tracking-widest text-gray-500 bg-black/40">
-            <th class="p-4 border-b border-white/5">Tanggal / Hari</th>
-            <th class="p-4 border-b border-white/5 text-blue-400">Team Leader / Shift</th>
-            <th class="p-4 border-b border-white/5 text-center bg-blue-500/5">MP Planning (S|P)</th>
-            <th class="p-4 border-b border-white/5 text-center bg-purple-500/5">MP Actual (S|P)</th>
-            <th class="p-4 border-b border-white/5 text-right">Target Plan</th>
-            <th class="p-4 border-b border-white/5 text-right">Target Act</th>
-            <th class="p-4 border-b border-white/5 text-right text-blue-400">Total Ach</th>
-            <th class="p-4 border-b border-white/5 text-center">Ach Plan (%)</th>
-            <th class="p-4 border-b border-white/5 text-center">Ach Act (%)</th>
-          </tr>
-        </thead>
-        <tbody id="table-body" class="text-[11px] font-bold">
-          <!-- Data Rows -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- POPUP MODAL (Audit Karyawan) -->
-  <div id="modal-audit" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
-    <div class="cyber-card w-full max-w-2xl max-h-[80vh] rounded-3xl border border-blue-500/30 overflow-hidden flex flex-col shadow-2xl">
-      <div class="p-6 border-b border-white/5 flex justify-between items-center bg-blue-600/10">
-        <div>
-          <h3 id="modal-title" class="text-lg font-black italic tracking-tighter uppercase text-blue-400">MP AUDIT LIST</h3>
-          <p id="modal-subtitle" class="text-[9px] text-gray-500 font-bold tracking-widest"></p>
+  <footer class="mt-20 mb-8 text-center">
+    <div class="flex flex-col items-center justify-center">
+      <div class="text-[11px] tracking-[0.4em] font-bold text-gray-400 mb-6 uppercase no-italic">
+        INTEGRATED LOGISTICS ANALYTICS
+      </div>
+      <div class="flex items-center gap-6 mb-8">
+        <div class="text-sm font-bold text-gray-500 tracking-widest uppercase no-italic">SYSTEM OPTIMIZED BY</div>
+        <div class="h-8 w-[1px] bg-gray-700"></div>
+        <div class="text-2xl font-extrabold tracking-widest no-italic text-white">
+          MULY@<span class="text-white">.</span>ID
         </div>
-        <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-red-500/20 text-white flex items-center justify-center transition-all">&times;</button>
       </div>
-      <div class="p-6 overflow-y-auto" id="modal-content">
-        <!-- List Karyawan -->
+      <div class="border-t border-white/5 w-64 pt-4 text-[9px] text-gray-600 uppercase tracking-[0.2em] no-italic">
+        © 2026 ANALYTICS CORE • ALL RIGHTS RESERVED
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DETAIL -->
+  <div id="modal" class="fixed inset-0 modal-bg z-50 hidden flex items-center justify-center p-4">
+    <div class="glass w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl">
+      <div class="p-6 border-b border-white/5 flex justify-between items-start">
+        <div>
+          <h2 id="mNama" class="text-xl font-extrabold uppercase no-italic tracking-tight text-white">NAMA</h2>
+          <p id="mStatus" class="text-blue-500 text-[10px] font-black mt-1 uppercase tracking-widest no-italic">STATUS</p>
+        </div>
+        <button onclick="tutupModal()" class="text-gray-500 hover:text-white bg-white/5 w-8 h-8 rounded-full transition">✕</button>
+      </div>
+      
+      <div id="mStrategy" class="mx-6 mt-4 p-4 rounded-2xl bg-blue-600/10 border border-blue-500/20">
+        <div class="text-[9px] font-black text-blue-500 uppercase tracking-tighter mb-2 no-italic text-center">Rekomendasi Strategi Kejar Target</div>
+        <div id="strategyText" class="text-[10px] font-bold text-blue-200 uppercase tracking-tight leading-relaxed"></div>
+      </div>
+
+      <div id="mBody" class="p-6 max-h-[50vh] overflow-y-auto space-y-3"></div>
+      
+      <div class="p-4 bg-black/40 text-center">
+        <button onclick="tutupModal()" class="w-full py-3 bg-white text-black font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-200 transition">Tutup Detail</button>
       </div>
     </div>
   </div>
 
-  <!-- LOADING OVERLAY -->
-  <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] hidden flex-col items-center justify-center">
-    <div class="loader w-14 h-14 border-4 border-white/10 rounded-full mb-4"></div>
-    <p class="text-[10px] font-black tracking-[0.5em] text-blue-500 animate-pulse uppercase">Syncing Muly@.ID Database...</p>
+  <!-- MODAL FORMULA -->
+  <div id="formulaModal" class="fixed inset-0 modal-bg z-[60] hidden flex items-center justify-center p-4 text-center">
+    <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 border border-white/10 shadow-2xl">
+      <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6 no-italic">Formula Dasar :</div>
+      <div id="fFormula" class="bg-black/40 p-6 rounded-2xl text-sm font-mono font-bold text-blue-400 mb-8 border border-white/5 break-all"></div>
+      <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 no-italic">Logika Pembagian :</div>
+      <div id="fLogic" class="text-xl font-black mb-10 uppercase no-italic text-white">Diterima 50%</div>
+      <button onclick="document.getElementById('formulaModal').classList.add('hidden')" class="w-full py-4 bg-white text-black font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-200 transition">Tutup Detail</button>
+    </div>
+  </div>
+
+  <!-- MODAL REPORT -->
+  <div id="reportModal" class="fixed inset-0 modal-bg z-50 hidden flex items-center justify-center p-4">
+    <div class="glass w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="p-6 border-b border-white/5 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-extrabold uppercase no-italic tracking-tight text-white">Performance Summary Table</h2>
+          <p class="text-blue-500 text-[10px] font-black mt-1 uppercase tracking-widest no-italic">Data Terurut Berdasarkan Pencapaian Tertinggi</p>
+        </div>
+        <div class="flex gap-3">
+          <button id="btnSaveToSheet" onclick="downloadToSheet()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition">Send to Sheet Report</button>
+          <button onclick="tutupModalLaporan()" class="text-gray-500 hover:text-white bg-white/5 w-8 h-8 rounded-full transition">✕</button>
+        </div>
+      </div>
+      
+      <div class="p-6 overflow-auto flex-grow">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Poin</th>
+              <th>Target</th>
+              <th>Efisiensi (%)</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+      </div>
+      
+      <div class="p-4 bg-black/40 text-center">
+        <button onclick="tutupModalLaporan()" class="w-full py-3 bg-white text-black font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-200 transition">Tutup Laporan</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzjZk_1bGrE5s41LxQuEwpfOXQ4fghyBqMMk6PvG8zKYZE1Tcowr9Yc-jO_CWxiUg59uQ/exec?action=getData";
-    let globalData = [];
+    // MASUKKAN URL WEB APP GAS ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjZk_1bGrE5s41LxQuEwpfOXQ4fghyBqMMk6PvG8zKYZE1Tcowr9Yc-jO_CWxiUg59uQ/exec";
 
-    async function fetchData() {
-      const overlay = document.getElementById('loading-overlay');
-      overlay.classList.add('flex');
-      overlay.classList.remove('hidden');
+    let dataMaster = [];
+    let currentFilteredData = [];
+    let filterTimeout = null;
+
+    async function muatData() {
+      const tgl = document.getElementById('tglInput').value;
+      if(!tgl) return alert("Pilih tanggal terlebih dahulu!");
+      
+      const container = document.getElementById('listContainer');
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20">
+          <div class="animate-flicker text-blue-500 font-black no-italic uppercase tracking-[0.2em] text-sm">
+            Syncing Analytics Core...
+          </div>
+          <div class="w-48 h-1 bg-gray-900 rounded-full mt-4 overflow-hidden">
+            <div class="h-full bg-blue-600 animate-[pulse_1.5s_infinite]"></div>
+          </div>
+        </div>
+      `;
 
       try {
-        const response = await fetch(API_URL);
-        globalData = await response.json();
-        renderDashboard(globalData);
+        const response = await fetch(`${API_URL}?action=getDashboardData&tgl=${tgl}`);
+        const res = await response.json();
+        
+        dataMaster = res;
+        document.getElementById('btnReport').classList.remove('hidden');
+        filterTampilan();
       } catch (err) {
-        alert("Gagal koneksi ke API!");
-      } finally {
-        overlay.classList.add('hidden');
-        overlay.classList.remove('flex');
+        console.error(err);
+        alert("Gagal memuat data dari API!");
       }
     }
 
-    function renderDashboard(data) {
-      const tableBody = document.getElementById('table-body');
-      tableBody.innerHTML = '';
-      
-      let summary = { totalAch: 0, totalTargetAct: 0, successCount: 0, failCount: 0 };
+    function filterTampilan() {
+      clearTimeout(filterTimeout);
+      filterTimeout = setTimeout(() => {
+        const search = document.getElementById('multiSearch').value.toLowerCase().trim();
+        const container = document.getElementById('listContainer');
 
-      data.forEach((row, index) => {
-        summary.totalAch += row.totalAch;
-        summary.totalTargetAct += row.targetAct;
-        row.ketAct === "BERHASIL" ? summary.successCount++ : summary.failCount++;
+        let searchArr = [];
+        if (search) {
+          searchArr = search.split(/[\n,]+/).map(s => s.trim()).filter(s => s !== "");
+        }
 
-        const getStatusColor = (val) => val >= 90 ? 'text-green-400 bg-green-500/10' : (val >= 80 ? 'text-yellow-400 bg-yellow-500/10' : 'text-red-400 bg-red-500/10');
+        let filtered = dataMaster.filter(op => {
+          if (!op.nama) return false;
+          if (searchArr.length === 0) return true;
+          const nama = (op.nama || "").toLowerCase();
+          const username = (op.username || "").toLowerCase();
+          return searchArr.some(s => {
+            const cleanNama = nama.replace(/\s+/g, " ").trim();
+            const cleanUsername = username.replace(/\s+/g, " ").trim();
+            const cleanInput = s.replace(/\s+/g, " ").trim();
+            return cleanNama === cleanInput || cleanUsername === cleanInput;
+          });
+        });
 
-        tableBody.innerHTML += `
-          <tr class="hover:bg-white/5 border-b border-white/5 transition-all">
-            <td class="p-4">
-              <span class="text-white block">${row.tanggal}</span>
-              <span class="text-[9px] text-gray-500 uppercase">${row.hari}</span>
-            </td>
-            <td class="p-4">
-              <span class="text-blue-400 font-extrabold block tracking-tighter uppercase">${row.tl}</span>
-              <span class="text-[9px] bg-slate-800 px-2 py-0.5 rounded text-gray-400">${row.shift}</span>
-            </td>
-            <td class="p-4 text-center bg-blue-500/5 cursor-pointer hover:bg-blue-500/20" onclick="showAudit(${index}, 'plan')">
-              <div class="text-white text-sm font-black">${row.planSenior + row.planProb}</div>
-              <div class="text-[8px] text-blue-300 tracking-tighter italic">S:${row.planSenior} | P:${row.planProb}</div>
-            </td>
-            <td class="p-4 text-center bg-purple-500/5 cursor-pointer hover:bg-purple-500/20" onclick="showAudit(${index}, 'act')">
-              <div class="text-white text-sm font-black">${row.actSenior + row.actProb}</div>
-              <div class="text-[8px] text-purple-300 tracking-tighter italic">S:${row.actSenior} | P:${row.actProb}</div>
-            </td>
-            <td class="p-4 text-right font-mono text-gray-500">${row.targetPlan.toLocaleString()}</td>
-            <td class="p-4 text-right font-mono text-gray-300">${row.targetAct.toLocaleString()}</td>
-            <td class="p-4 text-right font-mono text-blue-400 font-black">${row.totalAch.toLocaleString()}</td>
-            <td class="p-4 text-center">
-              <div class="py-2 px-1 rounded-lg border border-white/5 font-black ${getStatusColor(row.percPlan)}">${row.percPlan}%</div>
-              <div class="text-[7px] mt-1 tracking-widest text-gray-600">${row.ketPlan}</div>
-            </td>
-            <td class="p-4 text-center">
-              <div class="py-2 px-1 rounded-lg border border-white/5 font-black ${getStatusColor(row.percAct)}">${row.percAct}%</div>
-              <div class="text-[7px] mt-1 tracking-widest text-gray-600">${row.ketAct}</div>
-            </td>
+        filtered.sort((a, b) => (b.totalPoin / b.target) - (a.totalPoin / a.target));
+        currentFilteredData = filtered;
+
+        let html = "";
+        let stats = { sr: 0, srp: 0, pr: 0, prp: 0, total: 0 };
+
+        filtered.forEach((op) => {
+          const isSenior = op.status === "Senior";
+          const currentPerc = (op.totalPoin / op.target) * 100;
+          const isGoal = currentPerc >= 100;
+
+          if(isSenior) { stats.sr++; stats.srp += 320; } 
+          else { stats.pr++; stats.prp += 180; }
+          stats.total += op.totalPoin;
+
+          html += `
+            <div class="glass p-5 rounded-2xl grid grid-cols-12 gap-4 items-center border-l-4 
+              ${isGoal ? 'border-green-500 border-glow-green' : (isSenior ? 'border-blue-600' : 'border-amber-600')}">
+              <div class="col-span-12 md:col-span-4">
+                <div class="font-extrabold text-lg uppercase no-italic leading-tight tracking-tight">${op.nama}</div>
+                <div class="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider no-italic">${op.status} • ${op.username}</div>
+              </div>
+              <div class="col-span-6 md:col-span-2 text-center">
+                <div class="text-2xl font-black ${isGoal ? 'text-green-500' : 'text-white'}">${op.totalPoin.toFixed(2)}</div>
+                <div class="text-[9px] text-gray-600 uppercase font-bold tracking-tighter no-italic">Target: ${op.target}</div>
+              </div>
+              <div class="col-span-6 md:col-span-4 px-4">
+                <div class="flex justify-between text-[9px] font-black mb-1.5 uppercase tracking-widest">
+                  <span class="text-gray-600 no-italic">Efficiency</span>
+                  <span class="${isGoal ? 'text-green-500' : 'text-blue-500'}">${currentPerc.toFixed(2)}%</span>
+                </div>
+                <div class="h-1.5 w-full bg-black rounded-full overflow-hidden border border-white/5">
+                  <div class="h-full transition-all duration-1000 ${isGoal ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${Math.min(currentPerc, 100)}%"></div>
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-2 text-right">
+                <button onclick="bukaModal(${dataMaster.indexOf(op)})" class="w-full bg-blue-600/10 text-blue-500 border border-blue-500/20 text-[10px] font-black py-2.5 rounded-xl uppercase hover:bg-blue-600 hover:text-white transition tracking-widest">
+                  View Detail
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html || '<div class="text-center py-20 text-gray-600 no-italic">No Matches Found.</div>';
+        
+        const cap = (stats.srp + stats.prp);
+        document.getElementById('countSenior').innerHTML = `${stats.sr} <span class="text-xs text-gray-600">/ ${stats.srp} Poin</span>`;
+        document.getElementById('countProb').innerHTML = `${stats.pr} <span class="text-xs text-gray-600">/ ${stats.prp} Poin</span>`;
+        document.getElementById('totalCapacity').innerText = cap;
+        document.getElementById('totalAchievement').innerText = stats.total.toFixed(2);
+        document.getElementById('globalEfficiency').innerText = (cap > 0 ? (stats.total / cap * 100).toFixed(2) : 0) + "%";
+      }, 300);
+    }
+
+    function bukaModalLaporan() {
+      const tbody = document.getElementById('reportTableBody');
+      tbody.innerHTML = currentFilteredData.map((op, index) => {
+        const perc = (op.totalPoin / op.target) * 100;
+        return `
+          <tr>
+            <td style="color: #4b5563;">${index + 1}</td>
+            <td style="font-weight: 800; color: #fff;">${op.nama}</td>
+            <td style="color: #9ca3af;">${op.username}</td>
+            <td style="color: #3b82f6; font-weight: 800;">${op.status}</td>
+            <td style="font-weight: 800; color: #fff;">${op.totalPoin.toFixed(2)}</td>
+            <td style="color: #9ca3af;">${op.target}</td>
+            <td style="font-weight: 800; color: ${perc >= 100 ? '#22c55e' : '#3b82f6'}">${perc.toFixed(2)}%</td>
           </tr>
         `;
-      });
-
-      updateSummary(summary);
+      }).join('');
+      document.getElementById('reportModal').classList.remove('hidden');
     }
 
-    function showAudit(index, type) {
-      const item = globalData[index];
-      const list = type === 'plan' ? 
-        [...(item.planSeniorList || []), ...(item.planProbList || [])] : 
-        [...(item.actSeniorList || []), ...(item.actProbList || [])];
+    async function downloadToSheet() {
+      const btn = document.getElementById('btnSaveToSheet');
+      const tgl = document.getElementById('tglInput').value;
       
-      document.getElementById('modal-title').innerText = `${type.toUpperCase()} AUDIT: ${item.tl}`;
-      document.getElementById('modal-subtitle').innerText = `${item.tanggal} | SHIFT ${item.shift}`;
-      
-      const content = document.getElementById('modal-content');
-      content.innerHTML = list.length ? list.map(emp => `
-        <div class="flex justify-between items-center p-3 mb-2 bg-white/5 rounded-xl border border-white/5">
-          <div>
-            <div class="text-[11px] font-black uppercase text-blue-400 tracking-tighter">${emp.nama}</div>
-            <div class="text-[9px] text-gray-500">Status: ${emp.status}</div>
+      if (!tgl) return alert("Tanggal tidak terdeteksi!");
+
+      btn.innerText = "Syncing Data...";
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'saveReportToSheet',
+            tgl: tgl,
+            data: currentFilteredData
+          })
+        });
+        const res = await response.json();
+        alert(res.message);
+      } catch (err) {
+        alert("Gagal mengirim data ke Sheet!");
+      } finally {
+        btn.innerText = "Send to Sheet Report";
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
+    }
+
+    function tutupModalLaporan() {
+      document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    function bukaModal(idx) {
+      const op = dataMaster[idx];
+      document.getElementById('mNama').innerText = op.nama;
+      document.getElementById('mStatus').innerText = `${op.status} • DAILY TARGET ${op.target}`;
+      const sText = document.getElementById('strategyText');
+      const currentPerc = (op.totalPoin / op.target) * 100;
+
+      if (currentPerc >= 100) {
+        sText.innerHTML = '<div class="text-green-500 text-center font-black no-italic py-2">✓ TARGET TERCAPAI! PERFORMANCE OPTIMAL.</div>';
+      } else {
+        const sisa = op.target - op.totalPoin;
+        sText.innerHTML = `
+          <div class="grid grid-cols-1 gap-1">
+            <p>Sisa Kurang: <span class="text-white">${sisa.toFixed(2)} Poin</span></p>
+            <ul class="list-disc list-inside text-blue-400 mt-1">
+              <li>± ${Math.ceil(sisa / 0.45)} Invoice SINGLE</li>
+              <li>± ${Math.ceil(sisa / 0.85)} Invoice MULTIPLE</li>
+              <li>± ${Math.ceil(sisa / 1.5)} Invoice BULK</li>
+            </ul>
           </div>
-          <div class="text-[10px] font-mono text-gray-400">${emp.jam || '-'}</div>
-        </div>
-      `).join('') : '<p class="text-center text-gray-600 text-xs py-10 italic">Data list tidak ditemukan pada report.</p>';
+        `;
+      }
 
-      document.getElementById('modal-audit').classList.add('modal-active');
-    }
-
-    function closeModal() {
-      document.getElementById('modal-audit').classList.remove('modal-active');
-    }
-
-    function updateSummary(s) {
-      const container = document.getElementById('stats-container');
-      const avg = s.totalTargetAct > 0 ? ((s.totalAch / s.totalTargetAct) * 100).toFixed(1) : 0;
-      
-      const stats = [
-        { label: 'Total Pencapaian', val: s.totalAch.toLocaleString(), color: 'text-blue-500', sub: 'Pcs Completed' },
-        { label: 'Avg Achievement', val: avg + '%', color: avg >= 90 ? 'text-green-400' : 'text-red-400', sub: 'Global Performance' },
-        { label: 'Ringkasan Berhasil', val: s.successCount, color: 'text-green-500', sub: 'Shift Target Met' },
-        { label: 'Ringkasan Gagal', val: s.failCount, color: 'text-red-500', sub: 'Under Target' }
-      ];
-
-      container.innerHTML = stats.map(st => `
-        <div class="cyber-card p-5 rounded-2xl glow-blue border-white/10">
-          <p class="text-[8px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1">${st.label}</p>
-          <p class="text-2xl font-black italic ${st.color} tracking-tighter">${st.val}</p>
-          <p class="text-[8px] text-gray-600 font-bold mt-1 uppercase">${st.sub}</p>
+      document.getElementById('mBody').innerHTML = op.logs.map(l => `
+        <div onclick="bukaFormula('${l.formulaDetail.replace(/'/g, "\\'")}', '${l.multiplierText}')" class="p-4 bg-white/5 rounded-2xl flex justify-between items-center border border-white/5 cursor-pointer hover:bg-white/10 transition group">
+          <div class="flex-grow">
+            <div class="flex items-center gap-2">
+               <div class="text-sm font-bold uppercase group-hover:text-blue-400 transition no-italic">${l.invoice}</div>
+               <span class="text-[9px] text-gray-500 font-black px-1.5 py-0.5 bg-white/5 rounded-md border border-white/5 no-italic">${l.kategori}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1.5">
+               <div class="text-[9px] text-blue-500 font-black uppercase tracking-widest no-italic">SKU: ${l.sku} • QTY: ${l.qty}</div>
+               <div class="h-1 w-1 rounded-full bg-gray-700"></div>
+               <div class="text-[9px] text-amber-500 font-black uppercase tracking-widest no-italic">🕒 ${l.time}</div>
+            </div>
+          </div>
+          <div class="text-lg font-black text-blue-400 no-italic">+${l.poinHasil}</div>
         </div>
       `).join('');
+      document.getElementById('modal').classList.remove('hidden');
     }
 
-    window.onload = fetchData;
+    function bukaFormula(f, l) {
+      document.getElementById('fFormula').innerText = f;
+      document.getElementById('fLogic').innerText = l;
+      document.getElementById('formulaModal').classList.remove('hidden');
+    }
+
+    function tutupModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('modal')) tutupModal();
+      if (event.target == document.getElementById('formulaModal')) document.getElementById('formulaModal').classList.add('hidden');
+      if (event.target == document.getElementById('reportModal')) tutupModalLaporan();
+    }
   </script>
 </body>
 </html>
